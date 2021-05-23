@@ -1,0 +1,13 @@
+wwwwwwwwwwwwwwwwwwwwwwwwww
+w---x-----A--------------w
+w---x--------------------w
+w---x----w-w----x----x---w
+w---x----w-w-------------w
+w---x----w-w------x------w
+w---x----w-w----------x--w
+wwwwwwwwww-wwwwwwwwww----w
+w---x----w---------------w
+w--------wwwwwwwwwwww----w
+w---------e--------------w
+w------------------------w
+wwwwwwwwwwwwwwwwwwwwwwwwww

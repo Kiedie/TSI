@@ -2,7 +2,8 @@
         (:domain ejc2)
     (:objects 
         loc_11 loc_12 loc_13 loc_14 loc_21 loc_22 loc_23 loc_24 loc_31 loc_32 loc_33 loc_34 - Localizacion
-        ext - Edificio
+        VCE1 VCE2                 - Unidad
+        CentroDeMando1 Extractor1 - Edificio
     )
 
     (:init
@@ -25,29 +26,33 @@
         (asig  Gas       loc_13)
 
         ;Indicamos el tipo de la unidad y del edificio
-        (esTipoUnidad      VCE1             VCE1)
-        (esTipoUnidad      VCE2             VCE2)
-        (esTipoEdificio     ext Extractor)
+        (esTipoUnidad      VCE1             VCE)
+        (esTipoUnidad      VCE2             VCE)
+        (esTipoEdificio    CentroDeMando1   CentroDeMando)
+        (esTipoEdificio    Extractor1       Extractor)
+
+
 
         ;Decimos donde está la unidad y además que está libre
-        (en                VCE1          loc_11)
-        (en                VCE2          loc_11)
+        (en                VCE1           loc_11)
+        (en                VCE2           loc_11)
+        (en                CentroDeMando1 loc_11)
         (uniNoAsig         VCE1)
         (uniNoAsig         VCE2)
 
         ;Para construir el estractor necesitamos minerales
         (necesita             Extractor       Minerales)
     
+        (edifConstruido      CentroDeMando1)
     )
 
     (:goal 
-        ;(or
+        ;(or 
         ;    (extrayendoRecurso VCE1 Gas)
         ;    (extrayendoRecurso VCE2 Gas)
         ;)
-        (and
-            (extrayendoRecurso VCE2 Minerales)
-        )
+        (and (tengoRecurso         Gas))
+
     )
 
 

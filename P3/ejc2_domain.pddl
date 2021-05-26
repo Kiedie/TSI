@@ -1,45 +1,46 @@
 (define (domain ejc2)
-(:requirements :strips  :typing :adl)
+(:requirements :strips  :typing :adl )
 
     (:types 
-        Movible NoMovible       - object
-        Unidad Edificio         - Movible 
-        Localizacion Recurso    - NoMovible
-
+        Movible NoMovible                        - object
+        tipoEdificio tipoRecurso tipoUnidad      - object
+        Unidad Edificio                          - Movible 
+        Localizacion Recurso                     - NoMovible
     )
 
     (:constants 
-        VCE1   VCE2                           - Unidad
-        CentroDeMando Barracones Extractor    - Edificio
-        Minerales Gas                         - Recurso
+        VCE                                  - tipoUnidad
+        CentroDeMando Barracones Extractor   - tipoEdificio
+        Minerales Gas                        - tipoRecurso
     )
 
     (:predicates 
         ;Determina si un edificio o unidad está en una localizacion concreta
-        (en                   ?m - Movible      ?loc - Localizacion )
+        (en                   ?m - Movible        ?loc - Localizacion )
         ;Representa que existe un camino entre dos localizaciones
-        (camino               ?x - Localizacion   ?y - Localizacion )
+        (camino               ?x - Localizacion     ?y - Localizacion )
         ;Determina si un edificio está construido
         (edifConstruido      ?ed - Edificio)
         ;Indica si un VCE está extrayendo un recurso
-        (extrayendoRecurso    ?u - Unidad         ?r - Recurso)
+        (extrayendoRecurso    ?u - Unidad         ?r - tipoRecurso)
         ;Dice si un nodo de un recurso concreto está asignado a una localizacion
-        (asig                 ?r - Recurso      ?loc - Localizacion)
+        (asig                 ?r - tipoRecurso      ?loc - Localizacion)
         ;Que recurso necesita cada edificio para ser construido
-        (necesita             ?e - Edificio       ?r - Recurso)
+        (necesita             ?e - tipoEdificio       ?r - tipoRecurso)
 
         
         ;Predicados alternativos
+
         ;Indica si una unidad está libre
         (uniNoAsig            ?u - Unidad)
         ;Para hacer distinciones sobre los distintos tipos de unidades
-        (esTipoUnidad         ?u - Unidad   ?tipo - Unidad )
+        (esTipoUnidad         ?u - Unidad     ?tipo - tipoUnidad )
         ;Para hacer distinciones sobre los distintos tipos de edificios
-        (esTipoEdificio       ?e - Edificio ?tipo - Edificio)
+        (esTipoEdificio       ?e - Edificio   ?tipo - tipoEdificio)
         ;Para hacer distinciones sobre el tipo de recurso
-        (esTipoRecurso        ?r - Recurso  ?tipo - Recurso)
+        ;(esTipoRecurso        ?r - Recurso    ?tipo - tipoRecurso)
         ;Indica si tengo o no un recurso
-        (tengoRecurso ?r - Recurso)
+        (tengoRecurso         ?r - tipoRecurso)
     )
 
     ;Mueve una unidad enre dos localizaciones
@@ -63,32 +64,26 @@
     ;Para poder obtener Gas Vepeno debe existir un edificio Exractor construido previamente
     ;sobre dicho nodo de recurso. No hay cambios para obtener recuros de mineral
     (:action asignar
-        :parameters (?u - Unidad ?loc - Localizacion ?tipo - Recurso)
+        :parameters (?u - Unidad ?loc - Localizacion ?tipo - tipoRecurso)
         :precondition 
             (and 
-                (en                   ?u ?loc)     ;La unidad debe estar en la localizacion del recurso
+                (uniNoAsig            ?u)          ;La unidad debe de estar libre                  
+                (esTipoUnidad         ?u    VCE)   ;La unidad debe ser un VCE
+                (en                   ?u    ?loc)  ;La unidad debe estar en la localizacion del recurso
                 (asig                 ?tipo ?loc)  ;El recurso debe estar asignado a la localizacion
-                (uniNoAsig            ?u)          ;La unidad debe de estar libre
-                ;La unidad debe de ser del tipo VCE
-                (or                                  ;La unidad debe ser VCE
-                    (esTipoUnidad      ?u      VCE1)      
-                    (esTipounidad      ?u      VCE2)
-                )
+               
+                
                 
                 (or ;El recurso o es un mineral o es un Gas
-                    (esTipoRecurso ?tipo Minerales)   
+                    (= ?tipo Minerales)   
 
-                    (and ;En el caso de que sea un Gas debe estár construido el edificio
-                        (esTipoRecurso        ?tipo     Gas)
-                        (edifConstruido      Extractor)
+                    ;Exista un extractor en esta localizacion
+                    (exists (?edif - Edificio)
+                        (and
+                            (esTipoEdificio       ?edif    Extractor)
+                            (en                   ?edif      ?loc )
+                        )
                     )
-
-                    ;(exists (?edif - Edificio)
-                    ;    (and
-                    ;        (esTipoEdificio       ?edif    Extractor)
-                    ;        (en                   ?edif      ?loc )
-                    ;    )
-                    ;)
 
                 )
             )
@@ -104,18 +99,21 @@
     ;Cada edif sólo requerirá un único tipo de recurso para ser construido
     ;Se permite que existan varios edificios en la misma localización
     (:action construir
-        :parameters (?u - Unidad ?e - Edificio ?loc - Localizacion ?r - Recurso)
+        :parameters (?u - Unidad ?e - Edificio ?loc - Localizacion ?r - tipoRecurso)
         :precondition 
             (and
-                (uniNoAsig         ?u)               ;La unidad tiene que estar libre
-                (or                                  ;La unidad debe ser VCE
-                    (esTipoUnidad      ?u      VCE1)      
-                    (esTipounidad      ?u      VCE2)
-                )
+                (uniNoAsig         ?u)               ;La unidad tiene que estar libre          
+                (esTipoUnidad      ?u      VCE)      ;La unidad debe de ser un VCE    
                 (en                ?u      ?loc)     ;La unidad debe estar en la localizacion
-                (necesita          ?e      ?r)       ;El edificio necesita de un recurso
-                (tengoRecurso ?r)
                 
+                ( exists (?tipo - tipoEdificio)               ;Debe de existir un tipo de edificio
+                    (and                                      ;Del cual el edificio sea de ese tipo
+                        (esTipoEdificio    ?e      ?tipo)
+                        (necesita          ?tipo      ?r)     ;Y ese tipo de edificio en concreto necesita un recurso 
+                    )
+                )
+
+                (tengoRecurso ?r)        
             )
         :effect 
             (and 
